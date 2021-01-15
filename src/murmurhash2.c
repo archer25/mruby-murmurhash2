@@ -10,35 +10,40 @@ murmur2(uint32_t h, uint32_t k, const uint8_t r)
   k *= m;
   k ^= k >> r;
   k *= m;
-  
+
   h *= m;
   h ^= k;
   return h;
 }
 
 static uint32_t
-murmur_hash_process2(char *str, int length)
+murmur_hash_process2(char *data, int length)
 {
   const uint32_t m = MURMURHASH_MAGIC;
   const uint8_t r = 24;
   uint32_t h, k;
   const char* p;
 
-  p = str;
-  h = length * m;
+  h = 0 ^ length; // Set seed to 0
 
   while (4 <= length) {
-    k = *(uint32_t*)p;
-    h = murmur2(h, k, r);
-    p += 4;
+    k = *(uint32_t*)data;
+    k *= m;
+    k ^= k >> r;
+    k *= m;
+
+    h *= m;
+    h ^= k;
+
+    data += 4;
     length -= 4;
   }
 
   switch (length) {
-  case 3: h ^= p[2] << 16;
-  case 2: h ^= p[1] << 8;
-  case 1: h ^= p[0];
-    h *= m;
+    case 3: h ^= data[2] << 16;
+    case 2: h ^= data[1] << 8;
+    case 1: h ^= data[0];
+            h *= m;
   }
 
   h ^= h >> 13;
